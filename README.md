@@ -1,4 +1,4 @@
-# Advanced Customer Segmentation
+# Customer Segmentation using K-Means
 
 Phân khúc khách hàng nâng cao sử dụng Behavioural Features + K-Means++ + SHAP.
 
