@@ -12,10 +12,11 @@ Advanced customer segmentation using Behavioural Features + K-Means++ + SHAP.
 
 Retailers need to group customers into actionable segments to target marketing spend, retention campaigns, and inventory planning. The standard approach **RFM (Recency, Frequency, Monetary)** is simple and widely used, but it has real limitations:
 
-- **Blind to behaviour, not just value.** Two customers with identical RFM scores can behave very differently: one buys the same items repeatedly, the other explores and returns most of what they order. RFM cannot tell them apart.
-- **No signal on returns.** Return rate is often one of the strongest predictors of true customer value and churn risk, yet it is absent from the RFM feature set entirely.
-- **One-size-fits-all clustering.** Applying a single clustering pass to the whole customer base mixes retail customers with wholesale-like/reseller accounts that have fundamentally different purchase patterns (bulk orders, high SKU concentration), distorting the segments for everyone else.
-- **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment; a plain cluster label isn't enough to justify a business action.
+- **Unfairly penalises high-return customers.** Cancelled/returned orders reduce both Frequency and Monetary, so RFM mislabels customers who are actively exploring the catalogue as low-value.
+- **Misreads seasonal buyers.** Customers who only purchase in a fixed season (e.g. Q4) rack up high Recency between orders and get flagged as "about to churn" by RFM, even though that's simply their normal purchase cycle.
+- **Cannot separate wholesale from retail customers.** Two customers with fundamentally different purchasing behaviour — a reseller placing bulk orders and an ordinary shopper — can land on identical RFM scores.
+- **Only captures totals, not behavioural trends.** RFM has no way to measure whether purchases arrive at a steady rhythm or in bursts, how varied a customer's basket is, or whether their spending is trending up or down.
+- **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment — a plain cluster label isn't enough to justify a business action.
 
 **Goal:** build a segmentation pipeline that (1) separates structurally different customer types before clustering, (2) uses a richer, purpose-built feature set beyond RFM, and (3) explains what actually drives each segment.
 
