@@ -10,12 +10,12 @@ Advanced customer segmentation using Behavioural Features + K-Means++ + SHAP.
 
 ## Problem Statement
 
-Retailers need to group customers into actionable segments to target marketing spend, retention campaigns, and inventory planning. The standard approach — **RFM (Recency, Frequency, Monetary)** — is simple and widely used, but it has real limitations:
+Retailers need to group customers into actionable segments to target marketing spend, retention campaigns, and inventory planning. The standard approach **RFM (Recency, Frequency, Monetary)** is simple and widely used, but it has real limitations:
 
-- **Blind to behaviour, not just value.** Two customers with identical RFM scores can behave very differently — one buys the same items repeatedly, the other explores and returns most of what they order. RFM cannot tell them apart.
+- **Blind to behaviour, not just value.** Two customers with identical RFM scores can behave very differently: one buys the same items repeatedly, the other explores and returns most of what they order. RFM cannot tell them apart.
 - **No signal on returns.** Return rate is often one of the strongest predictors of true customer value and churn risk, yet it is absent from the RFM feature set entirely.
 - **One-size-fits-all clustering.** Applying a single clustering pass to the whole customer base mixes retail customers with wholesale-like/reseller accounts that have fundamentally different purchase patterns (bulk orders, high SKU concentration), distorting the segments for everyone else.
-- **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment — a plain cluster label isn't enough to justify a business action.
+- **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment; a plain cluster label isn't enough to justify a business action.
 
 **Goal:** build a segmentation pipeline that (1) separates structurally different customer types before clustering, (2) uses a richer, purpose-built feature set beyond RFM, and (3) explains what actually drives each segment.
 
