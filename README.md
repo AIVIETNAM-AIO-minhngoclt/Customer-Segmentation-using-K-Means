@@ -1,6 +1,6 @@
 # Advanced Customer Segmentation
 
-Tài liệu bài giảng **AI Vietnam** — Phân khúc khách hàng nâng cao sử dụng Behavioural Features + K-Means++ + SHAP.
+Phân khúc khách hàng nâng cao sử dụng Behavioural Features + K-Means++ + SHAP.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -8,7 +8,7 @@ Tài liệu bài giảng **AI Vietnam** — Phân khúc khách hàng nâng cao s
 
 ---
 
-## Nội dung bài giảng
+## Nội dung 
 
 | Phần | Chủ đề | Notebook |
 |------|--------|----------|
