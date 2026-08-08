@@ -14,7 +14,7 @@ Retailers need to group customers into actionable segments to target marketing s
 
 - **Unfairly penalises high-return customers.** Cancelled/returned orders reduce both Frequency and Monetary, so RFM mislabels customers who are actively exploring the catalogue as low-value.
 - **Misreads seasonal buyers.** Customers who only purchase in a fixed season (e.g. Q4) rack up high Recency between orders and get flagged as "about to churn" by RFM, even though that's simply their normal purchase cycle.
-- **Cannot separate wholesale from retail customers.** Two customers with fundamentally different purchasing behaviour - a reseller placing bulk orders and an ordinary shopper — can land on identical RFM scores.
+- **Cannot separate wholesale from retail customers.** Two customers with fundamentally different purchasing behaviour - a reseller placing bulk orders and an ordinary shopper - can land on identical RFM scores.
 - **Only captures totals, not behavioural trends.** RFM has no way to measure whether purchases arrive at a steady rhythm or in bursts, how varied a customer's basket is, or whether their spending is trending up or down.
 - **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment; a plain cluster label isn't enough to justify a business action.
 
@@ -25,14 +25,14 @@ Retailers need to group customers into actionable segments to target marketing s
 ## Approach
 
 **1. Behavioural feature engineering (20 → 14 features).**
-Beyond RFM, engineer features across purchase rhythm, spending shape, basket behaviour, volume/bulk buying, product concentration, customer lifecycle, and spend acceleration — then drop redundant/correlated features via a correlation filter, keeping a compact set of 14.
+Beyond RFM, engineer features across purchase rhythm, spending shape, basket behaviour, volume/bulk buying, product concentration, customer lifecycle, and spend acceleration - then drop redundant/correlated features via a correlation filter, keeping a compact set of 14.
 
 **2. Two-stage clustering.**
 - **Stage 1 (rule-based):** split off wholesale-like accounts using SKU concentration (`SKU_HHI > 0.5`) before any clustering happens, so bulk buyers don't distort the retail segmentation.
 - **Stage 2 (K-Means++, k=4):** cluster the remaining retail customers on the 14 behavioural features to produce four interpretable segments.
 
 **3. Explainability with SHAP.**
-Train a Random Forest as a surrogate classifier over the cluster assignments, then use SHAP (`TreeExplainer`) to quantify which features actually drive each segment — turning "customer X is in cluster 2" into "customer X is in cluster 2 mainly because of high `ReturnRate`."
+Train a Random Forest as a surrogate classifier over the cluster assignments, then use SHAP (`TreeExplainer`) to quantify which features actually drive each segment - turning "customer X is in cluster 2" into "customer X is in cluster 2 mainly because of high `ReturnRate`."
 
 **4. Business profiling.**
 Translate clusters back into raw, business-readable metrics (not just scaled features) and pair each segment with a concrete strategy recommendation.
