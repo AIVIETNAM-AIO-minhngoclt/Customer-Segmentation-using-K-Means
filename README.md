@@ -10,7 +10,7 @@ Advanced customer segmentation using Behavioural Features + K-Means++ + SHAP.
 
 ## Problem Statement
 
-**Business context.** An online retailer has ~4,000 customers and ~500,000 transactions, but no way to segment them. Marketing cost keeps rising while spend becomes less effective — the same message goes out to everyone.
+**Business context.** An online retailer has ~4,000 customers and ~500,000 transactions, but no way to segment them. Marketing cost keeps rising while spend becomes less effective - the same message goes out to everyone.
 
 **What one-size-fits-all marketing looks like in practice:**
 - One email blast to the entire customer base → poor conversion.
@@ -23,9 +23,9 @@ Advanced customer segmentation using Behavioural Features + K-Means++ + SHAP.
 
 - **Unfairly penalises high-return customers.** Cancelled/returned orders reduce both Frequency and Monetary, so RFM mislabels customers who are actively exploring the catalogue as low-value.
 - **Misreads seasonal buyers.** Customers who only purchase in a fixed season (e.g. Q4) rack up high Recency between orders and get flagged as "about to churn" by RFM, even though that's simply their normal purchase cycle.
-- **Cannot separate wholesale from retail customers.** Two customers with fundamentally different purchasing behaviour — a reseller placing bulk orders and an ordinary shopper — can land on identical RFM scores.
+- **Cannot separate wholesale from retail customers.** Two customers with fundamentally different purchasing behaviour - a reseller placing bulk orders and an ordinary shopper - can land on identical RFM scores.
 - **Only captures totals, not behavioural trends.** RFM has no way to measure whether purchases arrive at a steady rhythm or in bursts, how varied a customer's basket is, or whether their spending is trending up or down.
-- **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment — a plain cluster label isn't enough to justify a business action.
+- **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment - a plain cluster label isn't enough to justify a business action.
 
 **Goal:** replace "one message for everyone" with "the right message for the right group" — segment customers by actual behaviour (not just RFM totals), separate structurally different customer types before clustering, and explain what drives each segment well enough for a marketing team to act on it.
 
@@ -99,11 +99,11 @@ Rationale: invoices starting with `C` are cancellations (`Quantity` is negative 
 
 Three patterns discovered during EDA directly shaped the feature engineering and preprocessing decisions below:
 
-- **Strong Q4 seasonality.** Monthly revenue climbs sharply from September, peaks in November (pre-Christmas shopping), and troughs in January–February. This is typical of a gift retailer, and it motivated `QuarterConcentration` — a feature measuring how much of a customer's annual spend lands in a single quarter.
+- **Strong Q4 seasonality.** Monthly revenue climbs sharply from September, peaks in November (pre-Christmas shopping), and troughs in January–February. This is typical of a gift retailer, and it motivated `QuarterConcentration` - a feature measuring how much of a customer's annual spend lands in a single quarter.
 - **Weekday, office-hours purchase pattern.** Transaction volume is concentrated 9am–5pm, Monday–Friday, with almost none on weekends or evenings — a signature of B2B/reseller ordering rather than personal (B2C) shopping. This motivated the "is this a B2B customer?" feature group (`SKU_HHI`, `BulkLineRate`, `QuantityCV`, `BurstIndex`) and the decision to split wholesale-like accounts out before clustering.
 - **Heavy-tailed spending.** Median customer spend is ~£300, but the top 1% spend over £10,000 — 30x the median. Since K-Means relies on Euclidean distance, this kind of outlier would pull cluster centroids off-target, which motivated the `QuantileTransformer` step in preprocessing.
 
-A standard RFM segmentation map (10 segments — Champions, Loyal, At Risk, Hibernating, etc.) was also built as a baseline, to check whether the richer behavioural feature set actually improves on it.
+A standard RFM segmentation map (10 segments - Champions, Loyal, At Risk, Hibernating, etc.) was also built as a baseline, to check whether the richer behavioural feature set actually improves on it.
 
 ---
 
@@ -135,7 +135,7 @@ Notable feature definitions:
 Order matters — each step corrects a problem introduced (or left unaddressed) by the previous one:
 
 1. **`QuantileTransformer(output='normal')`** — maps each feature's raw values to their percentile rank, turning skewed distributions into normal ones. Box-Cox was ruled out because many features are exact zero for a large share of customers (e.g. `ReturnRate` for anyone who has never returned an order), which Box-Cox can't handle.
-2. **`StandardScaler`** — rescales everything to zero mean, unit variance. Necessary because K-Means measures distance with Euclidean distance: without this step, a feature measured in £ would dominate the distance calculation and drown out every other feature.
+2. **`StandardScaler`** - rescales everything to zero mean, unit variance. Necessary because K-Means measures distance with Euclidean distance: without this step, a feature measured in £ would dominate the distance calculation and drown out every other feature.
 3. **Clip to ±3 standard deviations** — after scaling, a handful of B2B-like accounts had z-scores above 4. Clipping bounds their influence without deleting them from the dataset outright, keeping the information while limiting the damage extreme outliers do to centroid placement.
 
 ---
