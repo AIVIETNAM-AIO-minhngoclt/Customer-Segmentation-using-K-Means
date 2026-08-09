@@ -89,7 +89,7 @@ The dataset itself is not stored in the repo (see `.gitignore`).
 | 2 | Keep `Country == "United Kingdom"` only | 532,621 → 487,622 | 44,999 (8.3%) |
 | 3 | Drop missing `CustomerID` | 487,622 → 354,345 | 133,277 (24.6%) |
 | 4 | Drop `Quantity ≤ 0` and `UnitPrice ≤ 0` | 354,345 → 354,321 | 24 |
-| 5 | Keep customers with a single purchase | — | none — one-time buyers are a real segment, not noise |
+| 5 | Keep customers with a single purchase | - | none - one-time buyers are a real segment, not noise |
 
 Rationale: invoices starting with `C` are cancellations (`Quantity` is negative and doesn't reflect a real sale); non-UK customers behave differently (recurring wholesale) and are excluded to keep the model focused on the primary market; rows without a `CustomerID` can't be tied to a customer's behaviour over time; `Quantity`/`UnitPrice ≤ 0` rows are internal stock adjustments or test entries, not purchases.
 
@@ -100,8 +100,8 @@ Rationale: invoices starting with `C` are cancellations (`Quantity` is negative 
 Three patterns discovered during EDA directly shaped the feature engineering and preprocessing decisions below:
 
 - **Strong Q4 seasonality.** Monthly revenue climbs sharply from September, peaks in November (pre-Christmas shopping), and troughs in January–February. This is typical of a gift retailer, and it motivated `QuarterConcentration` - a feature measuring how much of a customer's annual spend lands in a single quarter.
-- **Weekday, office-hours purchase pattern.** Transaction volume is concentrated 9am–5pm, Monday–Friday, with almost none on weekends or evenings — a signature of B2B/reseller ordering rather than personal (B2C) shopping. This motivated the "is this a B2B customer?" feature group (`SKU_HHI`, `BulkLineRate`, `QuantityCV`, `BurstIndex`) and the decision to split wholesale-like accounts out before clustering.
-- **Heavy-tailed spending.** Median customer spend is ~£300, but the top 1% spend over £10,000 — 30x the median. Since K-Means relies on Euclidean distance, this kind of outlier would pull cluster centroids off-target, which motivated the `QuantileTransformer` step in preprocessing.
+- **Weekday, office-hours purchase pattern.** Transaction volume is concentrated 9am–5pm, Monday–Friday, with almost none on weekends or evenings - a signature of B2B/reseller ordering rather than personal (B2C) shopping. This motivated the "is this a B2B customer?" feature group (`SKU_HHI`, `BulkLineRate`, `QuantityCV`, `BurstIndex`) and the decision to split wholesale-like accounts out before clustering.
+- **Heavy-tailed spending.** Median customer spend is ~£300, but the top 1% spend over £10,000 - 30x the median. Since K-Means relies on Euclidean distance, this kind of outlier would pull cluster centroids off-target, which motivated the `QuantileTransformer` step in preprocessing.
 
 A standard RFM segmentation map (10 segments - Champions, Loyal, At Risk, Hibernating, etc.) was also built as a baseline, to check whether the richer behavioural feature set actually improves on it.
 
@@ -109,7 +109,7 @@ A standard RFM segmentation map (10 segments - Champions, Loyal, At Risk, Hibern
 
 ## Feature Engineering
 
-**Design principle:** don't ask *"what does this feature measure?"* — ask *"what does this feature tell us about the customer's behaviour?"* Every feature is designed to answer a specific business question, grouped into 5 perspectives on the same customer:
+**Design principle:** don't ask *"what does this feature measure?"* - ask *"what does this feature tell us about the customer's behaviour?"* Every feature is designed to answer a specific business question, grouped into 5 perspectives on the same customer:
 
 | Group | Business question | Features |
 |-------|--------------------|----------|
@@ -121,39 +121,39 @@ A standard RFM segmentation map (10 segments - Champions, Loyal, At Risk, Hibern
 
 Notable feature definitions:
 - **`InterPurchaseCV`** = std / mean of the gaps between purchases. Near 0 = buys on a predictable schedule; high = buys on impulse.
-- **`SpendGini`** borrows the Gini coefficient from economics: near 0 means spend is evenly spread across invoices, ~0.8 means one or two invoices dominate total spend — same total spend, very different behaviour.
-- **`SKU_HHI`** borrows the Herfindahl-Hirschman Index from antitrust economics: `Σ(revenue_SKU_i / total_revenue)²`. Near 1.0 means the customer buys almost exclusively one or two product types (a flower shop buying 80% from a single SKU scores ~0.64); near 0 means a diverse basket (~0.05 for a customer buying 20 different souvenirs). Values above 0.5 are treated as a strong B2B/wholesale signal — the single strongest signal in the whole feature set for that question.
-- **`ReturnRate`** = cancelled invoices / total invoices — the single most important feature in the final model. `ReturnValueRate` (return value / total transaction value) was computed only to sanity-check `ReturnRate`, since the two correlate at Spearman 0.971, and was excluded from the model to avoid redundancy.
-- **`QuarterConcentration`** = `clip(top quarter's spend / annual spend, 0.25, 1.0)` — the feature that operationalises the Q4-seasonality pattern found during EDA.
+- **`SpendGini`** borrows the Gini coefficient from economics: near 0 means spend is evenly spread across invoices, ~0.8 means one or two invoices dominate total spend - same total spend, very different behaviour.
+- **`SKU_HHI`** borrows the Herfindahl-Hirschman Index from antitrust economics: `Σ(revenue_SKU_i / total_revenue)²`. Near 1.0 means the customer buys almost exclusively one or two product types (a flower shop buying 80% from a single SKU scores ~0.64); near 0 means a diverse basket (~0.05 for a customer buying 20 different souvenirs). Values above 0.5 are treated as a strong B2B/wholesale signal - the single strongest signal in the whole feature set for that question.
+- **`ReturnRate`** = cancelled invoices / total invoices - the single most important feature in the final model. `ReturnValueRate` (return value / total transaction value) was computed only to sanity-check `ReturnRate`, since the two correlate at Spearman 0.971, and was excluded from the model to avoid redundancy.
+- **`QuarterConcentration`** = `clip(top quarter's spend / annual spend, 0.25, 1.0)` - the feature that operationalises the Q4-seasonality pattern found during EDA.
 
-**Correlation filtering:** starting from 20 candidate features, pairs with `|r| > 0.85` in the model space (after scaling) were treated as redundant — since K-Means measures distance across all features equally, near-duplicate features would silently double-count that signal. 6 features were dropped, leaving **14 features** with a maximum remaining pairwise correlation of 0.781.
+**Correlation filtering:** starting from 20 candidate features, pairs with `|r| > 0.85` in the model space (after scaling) were treated as redundant - since K-Means measures distance across all features equally, near-duplicate features would silently double-count that signal. 6 features were dropped, leaving **14 features** with a maximum remaining pairwise correlation of 0.781.
 
 ---
 
 ## Preprocessing Pipeline
 
-Order matters — each step corrects a problem introduced (or left unaddressed) by the previous one:
+Order matters - each step corrects a problem introduced (or left unaddressed) by the previous one:
 
-1. **`QuantileTransformer(output='normal')`** — maps each feature's raw values to their percentile rank, turning skewed distributions into normal ones. Box-Cox was ruled out because many features are exact zero for a large share of customers (e.g. `ReturnRate` for anyone who has never returned an order), which Box-Cox can't handle.
+1. **`QuantileTransformer(output='normal')`** - maps each feature's raw values to their percentile rank, turning skewed distributions into normal ones. Box-Cox was ruled out because many features are exact zero for a large share of customers (e.g. `ReturnRate` for anyone who has never returned an order), which Box-Cox can't handle.
 2. **`StandardScaler`** - rescales everything to zero mean, unit variance. Necessary because K-Means measures distance with Euclidean distance: without this step, a feature measured in £ would dominate the distance calculation and drown out every other feature.
-3. **Clip to ±3 standard deviations** — after scaling, a handful of B2B-like accounts had z-scores above 4. Clipping bounds their influence without deleting them from the dataset outright, keeping the information while limiting the damage extreme outliers do to centroid placement.
+3. **Clip to ±3 standard deviations** - after scaling, a handful of B2B-like accounts had z-scores above 4. Clipping bounds their influence without deleting them from the dataset outright, keeping the information while limiting the damage extreme outliers do to centroid placement.
 
 ---
 
 ## Clustering Methodology
 
-**Why K-Means** (over DBSCAN, Hierarchical, or Gaussian Mixture): simplicity, computational efficiency at this data size, and — critically for this use case — centroids that are directly interpretable by non-technical stakeholders as "the average behaviour of this segment."
+**Why K-Means** (over DBSCAN, Hierarchical, or Gaussian Mixture): simplicity, computational efficiency at this data size, and - critically for this use case - centroids that are directly interpretable by non-technical stakeholders as "the average behaviour of this segment."
 
-**Why split off wholesale accounts before clustering, and why with a rule instead of ML:** rule-based separation is preferable to a learned model when the distinguishing signal is already clear-cut, domain knowledge is available to define the rule, and the class in question is too small a minority for a general-purpose model to learn reliably. All three hold here: 179 wholesale-like accounts (`SKU_HHI > 0.5`, 4.6% of customers) were separated by rule before clustering. Leaving them in degrades the retail clustering — Silhouette score is 0.177 on the mixed cohort versus **0.244** on the 3,741 retail-only customers once wholesale accounts are removed.
+**Why split off wholesale accounts before clustering, and why with a rule instead of ML:** rule-based separation is preferable to a learned model when the distinguishing signal is already clear-cut, domain knowledge is available to define the rule, and the class in question is too small a minority for a general-purpose model to learn reliably. All three hold here: 179 wholesale-like accounts (`SKU_HHI > 0.5`, 4.6% of customers) were separated by rule before clustering. Leaving them in degrades the retail clustering - Silhouette score is 0.177 on the mixed cohort versus **0.244** on the 3,741 retail-only customers once wholesale accounts are removed.
 
-**Choosing k:** four metrics were tracked across k = 2–6 — Silhouette (↑ better), Davies-Bouldin (↓ better), Calinski-Harabasz (↑ better), and a weighted composite (`0.5×Silhouette + 0.25×1/(1+DB) + 0.25×CH/CH_max`, with Silhouette double-weighted since it most directly reflects cluster geometry). k=2 has the single highest Silhouette (0.315), but it only separates "buys a lot" from "buys a little" — too coarse to act on. k=4 (Silhouette 0.244, Davies-Bouldin 1.764, Calinski-Harabasz 1,066) was chosen over the statistically-optimal k=2 because going from k=3 to k=4 splits out a cluster of customers whose spend concentrates in Q4 — a segment that was previously blended into a larger cluster and that maps to a distinct, actionable marketing strategy. The final choice balances statistical quality against business actionability rather than optimising the metric alone.
+**Choosing k:** four metrics were tracked across k = 2–6 - Silhouette (↑ better), Davies-Bouldin (↓ better), Calinski-Harabasz (↑ better), and a weighted composite (`0.5×Silhouette + 0.25×1/(1+DB) + 0.25×CH/CH_max`, with Silhouette double-weighted since it most directly reflects cluster geometry). k=2 has the single highest Silhouette (0.315), but it only separates "buys a lot" from "buys a little" - too coarse to act on. k=4 (Silhouette 0.244, Davies-Bouldin 1.764, Calinski-Harabasz 1,066) was chosen over the statistically-optimal k=2 because going from k=3 to k=4 splits out a cluster of customers whose spend concentrates in Q4 - a segment that was previously blended into a larger cluster and that maps to a distinct, actionable marketing strategy. The final choice balances statistical quality against business actionability rather than optimising the metric alone.
 
 ---
 
 ## Key Results
 
 **Two-stage pipeline:**
-1. **Stage 1 (rule-based):** split off 179 wholesale-like accounts (`SKU_HHI > 0.5`) — 4.6% of the population
+1. **Stage 1 (rule-based):** split off 179 wholesale-like accounts (`SKU_HHI > 0.5`) - 4.6% of the population
 2. **Stage 2 (K-Means++, k=4):** clustered 3,741 retail customers on 14 behavioural features
 
 **4 retail segments and their strategies:**
@@ -161,17 +161,17 @@ Order matters — each step corrects a problem introduced (or left unaddressed) 
 | Cluster | Name | n (%) | Key signal | Strategy |
 |---------|------|-------|------------|----------|
 | C0 | Seasonal Intensives | 330 (8.8%) | `QuarterConcentration` ↑, `MonthlyOrderRate` ↑ (Q4-heavy buying) | Pre-season campaign + a year-round loyalty program to soften seasonality. Don't judge them by Recency outside Q4. |
-| C1 | High-Return Actives | 1,107 (29.6%) | `ReturnRate` ↑ — **absent from RFM**; still highly active | Improve product info (real photos, exact sizing). Don't penalise with return fees — they're active buyers still exploring the catalogue. |
-| C2 | One-Time Explorers | 1,257 (33.6%) | `BasketSizeCV` ≈ 0, `ActiveSpanDays` ≈ 0, `NewSKURate` = 1.0 (no repeat SKUs) | Re-engage with category-based triggers tied to what they already bought — not generic discounts, since price isn't what's holding them back. |
-| C3 | Occasional Loyalists | 1,047 (28.0%) | Zero returns, long tenure, moderate frequency, highest LTV | Light touch — exclusive access / early previews rather than discounts. Lowest support cost of any segment; don't over-contact them. |
+| C1 | High-Return Actives | 1,107 (29.6%) | `ReturnRate` ↑ - **absent from RFM**; still highly active | Improve product info (real photos, exact sizing). Don't penalise with return fees - they're active buyers still exploring the catalogue. |
+| C2 | One-Time Explorers | 1,257 (33.6%) | `BasketSizeCV` ≈ 0, `ActiveSpanDays` ≈ 0, `NewSKURate` = 1.0 (no repeat SKUs) | Re-engage with category-based triggers tied to what they already bought - not generic discounts, since price isn't what's holding them back. |
+| C3 | Occasional Loyalists | 1,047 (28.0%) | Zero returns, long tenure, moderate frequency, highest LTV | Light touch - exclusive access / early previews rather than discounts. Lowest support cost of any segment; don't over-contact them. |
 
 ---
 
 ## SHAP Explainability
 
-**The problem:** K-Means only returns a cluster label (0–3) per customer — it can't say *why*. A marketing team needs to know whether a customer landed in C1 because of a high return rate or a short tenure, not just the label; and without knowing which features actually drive the cluster structure, there's no way to improve feature engineering going forward.
+**The problem:** K-Means only returns a cluster label (0–3) per customer - it can't say *why*. A marketing team needs to know whether a customer landed in C1 because of a high return rate or a short tenure, not just the label; and without knowing which features actually drive the cluster structure, there's no way to improve feature engineering going forward.
 
-**The fix — a surrogate model:** train an explainable classifier (Random Forest, 200 trees) to reproduce the K-Means cluster assignments, then run SHAP (`TreeExplainer`) on that classifier. Cross-validated accuracy is 0.9904 ± 0.0023 — high enough that the Random Forest is a faithful stand-in for the K-Means boundaries, so its SHAP attributions can be trusted as an explanation of the clustering itself.
+**The fix - a surrogate model:** train an explainable classifier (Random Forest, 200 trees) to reproduce the K-Means cluster assignments, then run SHAP (`TreeExplainer`) on that classifier. Cross-validated accuracy is 0.9904 ± 0.0023 - high enough that the Random Forest is a faithful stand-in for the K-Means boundaries, so its SHAP attributions can be trusted as an explanation of the clustering itself.
 
 **Global feature importance** (share of total mean |SHAP| across all clusters):
 
@@ -185,7 +185,7 @@ Order matters — each step corrects a problem introduced (or left unaddressed) 
 | `InterPurchaseCV` | 5.7% |
 | *(remaining 8 features)* | ~6.2% combined |
 
-The top 3 features alone account for roughly two-thirds of total discriminating power — confirming that return behaviour, seasonal concentration, and basket-size consistency are what actually separate these segments, far more than raw RFM-style totals.
+The top 3 features alone account for roughly two-thirds of total discriminating power - confirming that return behaviour, seasonal concentration, and basket-size consistency are what actually separate these segments, far more than raw RFM-style totals.
 
 **Per-cluster direction** (positive SHAP = pushes a customer *into* that cluster): C1 is driven almost entirely by a positive `ReturnRate` signal; C0 is driven by positive `QuarterConcentration`; C2 by low `BasketSizeCV`/short tenure; C3 by the *absence* of the other clusters' driving signals (few returns, no strong seasonal concentration, stable basket size).
 
@@ -207,7 +207,7 @@ Requires Python ≥ 3.10.
 
 ## Running the Notebooks
 
-Run in order — each notebook saves output consumed by the next:
+Run in order - each notebook saves output consumed by the next:
 
 ```
 01_cleaning_and_eda.ipynb      →  data/processed/cleaned_uk_data.csv
@@ -253,4 +253,4 @@ advanced_customer_segmentation/
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
