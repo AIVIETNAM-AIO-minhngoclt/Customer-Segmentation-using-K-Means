@@ -19,7 +19,7 @@ Advanced customer segmentation using Behavioural Features + K-Means++ + SHAP.
 - Customers who only buy in Q4 get contacted in July → wrong timing, no effect.
 - Customers with many returns get labelled "bad" and dropped → a potentially high-value segment gets missed.
 
-**Why the standard fix — RFM (Recency, Frequency, Monetary) - falls short.** RFM buckets each of the three dimensions into 5 quintiles and combines them into a 3-digit score. It's popular because it only needs basic transaction data (date, order count, revenue), which made it the industry default since the 1990s. But it has real limitations:
+**Why the standard fix - RFM (Recency, Frequency, Monetary) - falls short.** RFM buckets each of the three dimensions into 5 quintiles and combines them into a 3-digit score. It's popular because it only needs basic transaction data (date, order count, revenue), which made it the industry default since the 1990s. But it has real limitations:
 
 - **Unfairly penalises high-return customers.** Cancelled/returned orders reduce both Frequency and Monetary, so RFM mislabels customers who are actively exploring the catalogue as low-value.
 - **Misreads seasonal buyers.** Customers who only purchase in a fixed season (e.g. Q4) rack up high Recency between orders and get flagged as "about to churn" by RFM, even though that's simply their normal purchase cycle.
@@ -27,7 +27,7 @@ Advanced customer segmentation using Behavioural Features + K-Means++ + SHAP.
 - **Only captures totals, not behavioural trends.** RFM has no way to measure whether purchases arrive at a steady rhythm or in bursts, how varied a customer's basket is, or whether their spending is trending up or down.
 - **Segments aren't explainable.** Even when clustering succeeds, stakeholders need to know *why* a customer landed in a given segment - a plain cluster label isn't enough to justify a business action.
 
-**Goal:** replace "one message for everyone" with "the right message for the right group" — segment customers by actual behaviour (not just RFM totals), separate structurally different customer types before clustering, and explain what drives each segment well enough for a marketing team to act on it.
+**Goal:** replace "one message for everyone" with "the right message for the right group" - segment customers by actual behaviour (not just RFM totals), separate structurally different customer types before clustering, and explain what drives each segment well enough for a marketing team to act on it.
 
 ---
 
