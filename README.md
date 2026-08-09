@@ -45,7 +45,7 @@ Five steps, each answering a specific question:
 
 ---
 
-## Lecture Contents
+## Notebook Contents
 
 | Part | Topic | Notebook |
 |------|-------|----------|
