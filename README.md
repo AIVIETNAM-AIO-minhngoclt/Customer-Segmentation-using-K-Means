@@ -52,8 +52,8 @@ Five steps, each answering a specific question:
 | 2 | EDA & Data Cleaning | [`01_cleaning_and_eda.ipynb`](notebooks/01_cleaning_and_eda.ipynb) |
 | 3 | Feature Engineering (20 → 14 features) | [`02_feature_engineering.ipynb`](notebooks/02_feature_engineering.ipynb) |
 | 4 | Two-Stage Clustering (K-Means++) | [`03_modeling.ipynb`](notebooks/03_modeling.ipynb) |
-| 5 | SHAP Explainability — Opening the black box | [`04_shap_analysis.ipynb`](notebooks/04_shap_analysis.ipynb) |
-| 6 | Cluster Profiles & Strategy (raw-value) | [`05_cluster_profiling.ipynb`](notebooks/05_cluster_profiling.ipynb) |
+| 5 | SHAP Explainability | [`04_shap_analysis.ipynb`](notebooks/04_shap_analysis.ipynb) |
+| 6 | Cluster Profiles & Strategy | [`05_cluster_profiling.ipynb`](notebooks/05_cluster_profiling.ipynb) |
 
 ---
 
